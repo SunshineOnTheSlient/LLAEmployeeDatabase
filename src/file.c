@@ -28,7 +28,6 @@ int create_db_file(char *filename) {
 
 int open_db_file(char *filename) {
     int fd = open(filename, O_RDWR);
-    printf("%d", fd);
     if (fd == -1) {
         perror("open");
         return STATUS_ERROR;
