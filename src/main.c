@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <getopt.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "common.h"
 #include "file.h"
@@ -21,7 +22,7 @@ int main(int argc, char *argv[]) {
     char *filepath = NULL;
     char *addstring = NULL;
     bool newfile = false;
-    bool listemployees = false;
+    bool list = false;
     int c;
 
     int dbfd = -1;
@@ -40,7 +41,7 @@ int main(int argc, char *argv[]) {
                 addstring = optarg;
                 break;
             case 'l':
-                listemployees = true;
+                list = true;
                 break;
             case '?' :
                 printf("Unkown option -%c\n", c);
@@ -92,5 +93,14 @@ int main(int argc, char *argv[]) {
         add_employee(dbhdr, &employees, addstring);
     }
 
+    if (list) {
+        list_employees(dbhdr, employees);
+    }
+
     output_file(dbfd, dbhdr, employees);
+
+    //clean up
+    free(employees);
+    free(dbhdr);
+    close(dbfd);
 }
