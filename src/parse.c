@@ -48,6 +48,42 @@ int add_employee(struct dbheader_t *dbhdr, struct employee_t **employees, char *
     return STATUS_SUCCESS;
 }
 
+int remove_employee(struct dbheader_t *dbhdr, struct employee_t **employees, char *removestring) {
+    if (NULL == dbhdr) return STATUS_ERROR;
+    if (NULL == employees) return STATUS_ERROR;
+    if (NULL == removestring) return STATUS_ERROR;
+
+    struct employee_t *e = *employees;
+
+    int employeeIndexToDelete = -1;
+    for (int i = 0; i < dbhdr->count; ++i) {
+        if (strcmp(e[i].name, removestring) == 0) {
+            employeeIndexToDelete = i;
+            break;
+        }
+    }
+    if (employeeIndexToDelete == -1) {
+        printf("Employee %s not found in database\n", removestring);
+        return STATUS_ERROR;
+    }
+    
+    if (!(employeeIndexToDelete == dbhdr->count -1)) {
+        for (int i = employeeIndexToDelete; i < dbhdr->count - 1; ++i) {
+        e[i] = e[i + 1];
+        }
+    } 
+
+    e = realloc(e, sizeof(struct employee_t) * (dbhdr->count - 1));
+    if (e == NULL) {
+        return STATUS_ERROR;
+    } else {
+        dbhdr->count--;
+        *employees = e;
+        return STATUS_SUCCESS;
+    }
+}
+
+
 int read_employees(int fd, struct dbheader_t *dbhdr, struct employee_t **employeesOut) {
     if (fd < 0) {
         printf("Bad FD from the user\n");
@@ -86,6 +122,8 @@ int output_file(int fd, struct dbheader_t *dbhdr, struct employee_t *employees) 
     dbhdr->version = htons(dbhdr->version);
 
     lseek(fd, 0, SEEK_SET);
+
+    ftruncate(fd, sizeof(struct dbheader_t) + (sizeof(struct employee_t) * realcount));
 
     write(fd, dbhdr, sizeof(struct dbheader_t));
 

@@ -14,6 +14,7 @@ void print_usage(char *argv[]) {
     printf("\t -f - (required) path to database file\n");
     printf("\t -l - list all employees in database file\n");
     printf("\t -a - adds employee to database file via CSV list (name,address,hours)\n");
+    printf("\t -r - removes employee from database file via name\n");
     return;
 }
 
@@ -21,6 +22,7 @@ int main(int argc, char *argv[]) {
 	
     char *filepath = NULL;
     char *addstring = NULL;
+    char *removestring = NULL;
     bool newfile = false;
     bool list = false;
     int c;
@@ -29,7 +31,7 @@ int main(int argc, char *argv[]) {
     struct dbheader_t *dbhdr = NULL;
     struct employee_t *employees = NULL;
 
-    while ((c = getopt(argc, argv, "nf:a:l")) != -1) {
+    while ((c = getopt(argc, argv, "nf:a:lr:")) != -1) {
         switch (c) {
             case 'n' :
                 newfile = true;
@@ -42,6 +44,9 @@ int main(int argc, char *argv[]) {
                 break;
             case 'l':
                 list = true;
+                break;
+            case 'r':
+                removestring = optarg;
                 break;
             case '?' :
                 printf("Unkown option -%c\n", c);
@@ -97,10 +102,19 @@ int main(int argc, char *argv[]) {
         list_employees(dbhdr, employees);
     }
 
+    if (removestring) {
+        if (remove_employee(dbhdr, &employees, removestring) == STATUS_ERROR) {
+            printf("unable to remove employee from database\n");
+            return -1;
+        }
+    }
+
     output_file(dbfd, dbhdr, employees);
 
     //clean up
     free(employees);
     free(dbhdr);
     close(dbfd);
+
+    return 0;
 }
