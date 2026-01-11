@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
     struct dbheader_t *dbhdr = NULL;
     struct employee_t *employees = NULL;
 
-    while ((c = getopt(argc, argv, "nf:a:lr:m:")) != -1) {
+    while ((c = getopt(argc, argv, "hnf:a:lr:m:")) != -1) {
         switch (c) {
             case 'n' :
                 newfile = true;
@@ -54,9 +54,12 @@ int main(int argc, char *argv[]) {
             case 'm':
                 modifystring = optarg;
                 break;
-            case '?' :
+            case '?':
                 printf("Unkown option -%c\n", c);
                 break;
+            case 'h':
+                print_usage(argv);
+                return 0;
             default:
                 return -1;
 
