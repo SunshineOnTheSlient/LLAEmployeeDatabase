@@ -6,6 +6,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "common.h"
 #include "parse.h"
@@ -81,6 +82,45 @@ int remove_employee(struct dbheader_t *dbhdr, struct employee_t **employees, cha
         *employees = e;
         return STATUS_SUCCESS;
     }
+}
+
+int modify_employee(struct dbheader_t *dbhdr, struct employee_t *employees, char *modifystring) {
+    if (NULL == dbhdr) return STATUS_ERROR;
+    if (NULL == employees) return STATUS_ERROR;
+    if (NULL == modifystring) return STATUS_ERROR;
+
+    char *mode = strtok(modifystring, ":");
+    if (NULL == mode) return STATUS_ERROR;
+    char *employee = strtok(NULL, ",");
+    if (NULL == employee) return STATUS_ERROR;
+    char *newValue = strtok(NULL, ",");
+    if (NULL == newValue) return STATUS_ERROR;
+
+    char modeUpper = toupper(*mode);
+
+    for (int i = 0; i < dbhdr->count; i++) {
+        if (strcmp(employees[i].name, employee) == 0) {
+            switch (modeUpper) {
+                case 'N':
+                    strncpy(employees[i].name, newValue, sizeof(employees[i].name));
+                    return STATUS_SUCCESS;
+                case 'A':
+                    strncpy(employees[i].address, newValue, sizeof(employees[i].address));
+                    return STATUS_SUCCESS;
+                case 'H':
+                    employees[i].hours = atoi(newValue);
+                    return STATUS_SUCCESS;
+                default :
+                    printf("Given mode is not a known mode value\n");
+                    printf("Modes are:\n\tN: Modify name.\n\tA: Modify Address.\n\tH: Modify hours.\n");
+                    return STATUS_ERROR;
+            }
+        }
+    }
+    printf("Unable to find name in Employee Database\n");
+    return STATUS_ERROR;
+
+    printf("Mode: %c, Employee to change: %s, New Value: %s\n", modeUpper, employee, newValue);
 }
 
 

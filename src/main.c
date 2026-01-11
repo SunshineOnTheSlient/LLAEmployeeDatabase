@@ -15,6 +15,8 @@ void print_usage(char *argv[]) {
     printf("\t -l - list all employees in database file\n");
     printf("\t -a - adds employee to database file via CSV list (name,address,hours)\n");
     printf("\t -r - removes employee from database file via name\n");
+    printf("\t -m - Modifies an employee in the database using the follow format (MODE:EmployeeName,NewValue) Where Mode is one of the following:\n");
+    printf("\t\tN: Modify name.\n\t\tA: Modify Address.\n\t\tH: Modify hours.\n");
     return;
 }
 
@@ -23,6 +25,7 @@ int main(int argc, char *argv[]) {
     char *filepath = NULL;
     char *addstring = NULL;
     char *removestring = NULL;
+    char *modifystring = NULL;
     bool newfile = false;
     bool list = false;
     int c;
@@ -31,7 +34,7 @@ int main(int argc, char *argv[]) {
     struct dbheader_t *dbhdr = NULL;
     struct employee_t *employees = NULL;
 
-    while ((c = getopt(argc, argv, "nf:a:lr:")) != -1) {
+    while ((c = getopt(argc, argv, "nf:a:lr:m:")) != -1) {
         switch (c) {
             case 'n' :
                 newfile = true;
@@ -47,6 +50,9 @@ int main(int argc, char *argv[]) {
                 break;
             case 'r':
                 removestring = optarg;
+                break;
+            case 'm':
+                modifystring = optarg;
                 break;
             case '?' :
                 printf("Unkown option -%c\n", c);
@@ -105,6 +111,13 @@ int main(int argc, char *argv[]) {
     if (removestring) {
         if (remove_employee(dbhdr, &employees, removestring) == STATUS_ERROR) {
             printf("unable to remove employee from database\n");
+            return -1;
+        }
+    }
+
+    if (modifystring) {
+        if (modify_employee(dbhdr, employees, modifystring) == STATUS_ERROR) {
+            printf("Unable to modify employee in database\n");
             return -1;
         }
     }
